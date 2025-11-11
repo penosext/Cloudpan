@@ -584,6 +584,146 @@
       border-radius: 2px;
     }
 
+    /* 评论Markdown现代化样式 */
+    .comment-markdown {
+      line-height: 1.7;
+      color: var(--on-surface);
+      word-wrap: break-word;
+    }
+
+    .comment-markdown h1,
+    .comment-markdown h2,
+    .comment-markdown h3,
+    .comment-markdown h4,
+    .comment-markdown h5,
+    .comment-markdown h6 {
+      color: var(--primary);
+      margin: var(--spacing-md) 0 var(--spacing-sm);
+      padding-bottom: var(--spacing-xs);
+      border-bottom: 1px solid var(--outline-variant);
+    }
+    
+    .comment-markdown h1 {
+      font-size: 1.5rem;
+    }
+    
+    .comment-markdown h2 {
+      font-size: 1.4rem;
+    }
+    
+    .comment-markdown h3 {
+      font-size: 1.3rem;
+    }
+    
+    .comment-markdown h4 {
+      font-size: 1.2rem;
+    }
+    
+    .comment-markdown h5 {
+      font-size: 1.1rem;
+    }
+    
+    .comment-markdown h6 {
+      font-size: 1rem;
+    }
+
+    .comment-markdown p {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .comment-markdown ul,
+    .comment-markdown ol {
+      margin-left: var(--spacing-lg);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .comment-markdown li {
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .comment-markdown blockquote {
+      border-left: 4px solid var(--primary);
+      padding-left: var(--spacing-md);
+      margin: var(--spacing-md) 0;
+      font-style: italic;
+      background: var(--primary-container);
+      padding: var(--spacing-md);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      color: var(--on-primary-container);
+    }
+
+    .comment-markdown code {
+      background: var(--surface-variant);
+      padding: 2px 6px;
+      border-radius: var(--radius-sm);
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      color: var(--on-surface-variant);
+    }
+
+    .comment-markdown pre {
+      background: var(--surface-variant);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+      overflow-x: auto;
+      margin: var(--spacing-md) 0;
+      border: 1px solid var(--outline-variant);
+    }
+
+    .comment-markdown pre code {
+      background: none;
+      padding: 0;
+      color: var(--on-surface);
+    }
+
+    .comment-markdown a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 600;
+      transition: var(--transition);
+      border-bottom: 1px dashed var(--primary);
+    }
+
+    .comment-markdown a:hover {
+      border-bottom-style: solid;
+      opacity: 0.8;
+    }
+
+    .comment-markdown table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: var(--spacing-md) 0;
+      box-shadow: var(--elevation-1);
+    }
+
+    .comment-markdown th,
+    .comment-markdown td {
+      padding: var(--spacing-sm);
+      border: 1px solid var(--outline-variant);
+      text-align: left;
+    }
+
+    .comment-markdown th {
+      background: var(--primary-container);
+      color: var(--on-primary-container);
+      font-weight: 700;
+    }
+
+    .comment-markdown img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--radius-md);
+      box-shadow: var(--elevation-1);
+      margin: var(--spacing-sm) 0;
+    }
+
+    .comment-markdown hr {
+      border: none;
+      height: 1px;
+      background: var(--outline-variant);
+      margin: var(--spacing-lg) 0;
+    }
+
     /* 保留其他样式... */
     .section-title {
       color: var(--primary);
@@ -984,6 +1124,11 @@
         gap: var(--spacing-sm);
         align-items: flex-start;
       }
+      
+      .comment {
+        flex-direction: column;
+        gap: var(--spacing-md);
+      }
     }
   </style>
 </head>
@@ -1374,7 +1519,7 @@
                 </div>
               </div>
               <h3><i class="fas fa-comment-dots"></i> ${issue.title}</h3>
-              <p>${issue.body || '无内容描述'}</p>
+              <div class="comment-markdown">${marked.parse(issue.body || '无内容描述')}</div>
               <button class="submit-button" onclick="loadComments(this, ${issue.number})"
                 style="margin-top:15px;padding:10px 20px;">
                 <i class="fas fa-comments"></i> 显示评论 (${issue.comments})
@@ -1409,7 +1554,7 @@
                   <span class="comment-author">${comment.user.login}</span>
                   <span class="comment-date">${new Date(comment.created_at).toLocaleString()}</span>
                 </div>
-                <div class="comment-body">${comment.body || '无评论内容'}</div>
+                <div class="comment-markdown">${marked.parse(comment.body || '无评论内容')}</div>
               </div>
             </div>
           `).join('');
