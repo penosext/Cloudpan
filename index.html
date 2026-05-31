@@ -7,61 +7,60 @@
   <script src="./js/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
-  <!-- Material You 风格样式 -->
   <style>
-    /* ========== CSS 变量 - Material You 配色 ========== */
+    /* ========== CSS 变量 - 蓝色主题 ========== */
     :root {
-      /* 主色调 */
-      --primary: #6750A4;
+      /* 主色调 - 蓝色系 */
+      --primary: #0067C0;
       --on-primary: #FFFFFF;
-      --primary-container: #EADDFF;
-      --on-primary-container: #21005D;
+      --primary-container: #D3E5FF;
+      --on-primary-container: #001D36;
       
       /* 次要色 */
-      --secondary: #625B71;
+      --secondary: #535F70;
       --on-secondary: #FFFFFF;
-      --secondary-container: #E8DEF8;
-      --on-secondary-container: #1D192B;
+      --secondary-container: #D7E3F7;
+      --on-secondary-container: #101C2B;
       
       /* 第三色 */
-      --tertiary: #7D5260;
+      --tertiary: #006C52;
       --on-tertiary: #FFFFFF;
-      --tertiary-container: #FFD8E4;
-      --on-tertiary-container: #31111D;
+      --tertiary-container: #7EF8D2;
+      --on-tertiary-container: #002116;
       
       /* 错误色 */
-      --error: #B3261E;
+      --error: #BA1A1A;
       --on-error: #FFFFFF;
-      --error-container: #F9DEDC;
-      --on-error-container: #410E0B;
+      --error-container: #FFDAD6;
+      --on-error-container: #410002;
       
-      /* 表面色 */
-      --surface: #FEF7FF;
-      --on-surface: #1C1B1F;
-      --surface-variant: #E7E0EC;
-      --on-surface-variant: #49454F;
+      /* 表面色 - 白色背景系列 */
+      --surface: #FFFFFF;
+      --on-surface: #1A1C1E;
+      --surface-variant: #DFE2EB;
+      --on-surface-variant: #43474E;
       
-      /* 背景色 */
-      --background: #FEF7FF;
-      --on-background: #1C1B1F;
+      /* 背景色 - 白色 */
+      --background: #F8F9FF;
+      --on-background: #1A1C1E;
       
       /* 轮廓色 */
-      --outline: #79747E;
-      --outline-variant: #CAC4D0;
+      --outline: #74777F;
+      --outline-variant: #C4C6D0;
       
       /* 表面容器 */
       --surface-container-lowest: #FFFFFF;
-      --surface-container-low: #F7F2FA;
-      --surface-container: #F3EDF7;
-      --surface-container-high: #ECE6F0;
-      --surface-container-highest: #E6E0E9;
+      --surface-container-low: #F3F5FA;
+      --surface-container: #EDEFF5;
+      --surface-container-high: #E7E9F0;
+      --surface-container-highest: #E2E4EA;
       
       /* 阴影 */
-      --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.05), 0 1px 3px 1px rgba(0, 0, 0, 0.08);
-      --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.08), 0 2px 6px 2px rgba(0, 0, 0, 0.05);
-      --elevation-3: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 8px 3px rgba(0, 0, 0, 0.06);
-      --elevation-4: 0 2px 3px rgba(0, 0, 0, 0.08), 0 6px 10px 4px rgba(0, 0, 0, 0.06);
-      --elevation-5: 0 4px 4px rgba(0, 0, 0, 0.08), 0 8px 12px 6px rgba(0, 0, 0, 0.06);
+      --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 3px 1px rgba(0, 0, 0, 0.05);
+      --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.05), 0 2px 6px 2px rgba(0, 0, 0, 0.03);
+      --elevation-3: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 8px 3px rgba(0, 0, 0, 0.04);
+      --elevation-4: 0 2px 3px rgba(0, 0, 0, 0.05), 0 6px 10px 4px rgba(0, 0, 0, 0.04);
+      --elevation-5: 0 4px 4px rgba(0, 0, 0, 0.05), 0 8px 12px 6px rgba(0, 0, 0, 0.04);
       
       /* 圆角 */
       --radius-xs: 4px;
@@ -92,42 +91,42 @@
 
     /* ========== 暗色主题 ========== */
     [data-theme="dark"] {
-      --primary: #D0BCFF;
-      --on-primary: #381E72;
-      --primary-container: #4F378B;
-      --on-primary-container: #EADDFF;
+      --primary: #A8C8FF;
+      --on-primary: #003059;
+      --primary-container: #00497E;
+      --on-primary-container: #D3E5FF;
       
-      --secondary: #CCC2DC;
-      --on-secondary: #332D41;
-      --secondary-container: #4A4458;
-      --on-secondary-container: #E8DEF8;
+      --secondary: #BBC7DB;
+      --on-secondary: #253140;
+      --secondary-container: #3B4858;
+      --on-secondary-container: #D7E3F7;
       
-      --tertiary: #EFB8C8;
-      --on-tertiary: #492532;
-      --tertiary-container: #633B48;
-      --on-tertiary-container: #FFD8E4;
+      --tertiary: #61DBB6;
+      --on-tertiary: #003828;
+      --tertiary-container: #00513D;
+      --on-tertiary-container: #7EF8D2;
       
-      --error: #F2B8B5;
-      --on-error: #601410;
-      --error-container: #8C1D18;
-      --on-error-container: #F9DEDC;
+      --error: #FFB4AB;
+      --on-error: #690005;
+      --error-container: #93000A;
+      --on-error-container: #FFDAD6;
       
-      --surface: #1C1B1F;
-      --on-surface: #E6E1E5;
-      --surface-variant: #49454F;
-      --on-surface-variant: #CAC4D0;
+      --surface: #121316;
+      --on-surface: #E2E2E5;
+      --surface-variant: #43474E;
+      --on-surface-variant: #C4C6D0;
       
-      --background: #1C1B1F;
-      --on-background: #E6E1E5;
+      --background: #121316;
+      --on-background: #E2E2E5;
       
-      --outline: #938F99;
-      --outline-variant: #49454F;
+      --outline: #8E9199;
+      --outline-variant: #43474E;
       
-      --surface-container-lowest: #0F0D13;
-      --surface-container-low: #1D1B20;
-      --surface-container: #211F26;
-      --surface-container-high: #2B2930;
-      --surface-container-highest: #36343B;
+      --surface-container-lowest: #0A0A0D;
+      --surface-container-low: #1A1C1E;
+      --surface-container: #1E2023;
+      --surface-container-high: #282A2E;
+      --surface-container-highest: #333539;
       
       --elevation-1: 0 1px 2px rgba(0, 0, 0, 0.2), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
       --elevation-2: 0 1px 2px rgba(0, 0, 0, 0.25), 0 2px 6px 2px rgba(0, 0, 0, 0.2);
@@ -238,24 +237,24 @@
     .logo-wrapper {
       display: inline-flex;
       align-items: center;
-      gap: var(--spacing-md);
-      margin-bottom: var(--spacing-sm);
+      justify-content: center;
+      margin-bottom: var(--spacing-md);
     }
 
     .logo-icon {
       width: 64px;
       height: 64px;
       border-radius: var(--radius-lg);
-      background: var(--primary-container);
+      background: var(--primary);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: var(--elevation-2);
+      box-shadow: var(--elevation-3);
     }
 
     .logo-icon i {
       font-size: 32px;
-      color: var(--on-primary-container);
+      color: var(--on-primary);
     }
 
     .header h1 {
@@ -271,7 +270,7 @@
       margin-top: var(--spacing-xs);
     }
 
-    /* ========== GitHub 统计栏 ========== */
+    /* ========== 统计栏 ========== */
     .stats-bar {
       display: flex;
       justify-content: center;
@@ -388,9 +387,16 @@
       margin-bottom: var(--spacing-sm);
     }
 
+    /* 去掉 Markdown 链接下划线 */
     .announcement-content a {
       color: var(--primary);
       font-weight: 500;
+      text-decoration: none;
+    }
+
+    .announcement-content a:hover {
+      text-decoration: none;
+      opacity: 0.8;
     }
 
     .announcement-content code {
@@ -450,11 +456,12 @@
 
     /* ========== 卡片容器 ========== */
     .card {
-      background: var(--surface-container-low);
+      background: var(--surface);
       border-radius: var(--radius-xl);
       padding: var(--spacing-lg);
       margin-bottom: var(--spacing-lg);
       box-shadow: var(--elevation-1);
+      border: 1px solid var(--outline-variant);
     }
 
     /* ========== 搜索框 ========== */
@@ -469,7 +476,7 @@
       padding-right: 48px;
       border: 2px solid var(--outline-variant);
       border-radius: var(--radius-full);
-      background: var(--surface-container-highest);
+      background: var(--surface-container-lowest);
       color: var(--on-surface);
       font-size: 0.95rem;
       transition: all var(--transition-duration) var(--transition-timing);
@@ -478,7 +485,7 @@
 
     .search-input:focus {
       border-color: var(--primary);
-      background: var(--surface-container-low);
+      background: var(--surface);
     }
 
     .search-input::placeholder {
@@ -528,11 +535,12 @@
 
     /* ========== 文件列表 ========== */
     .release-item {
-      background: var(--surface-container);
+      background: var(--surface);
       border-radius: var(--radius-lg);
       padding: var(--spacing-md) var(--spacing-lg);
       margin-bottom: var(--spacing-md);
       box-shadow: var(--elevation-1);
+      border: 1px solid var(--outline-variant);
     }
 
     .release-header {
@@ -676,7 +684,7 @@
     }
 
     .highlight {
-      background-color: rgba(103, 80, 164, 0.2);
+      background-color: rgba(0, 103, 192, 0.2);
       border-radius: 2px;
       padding: 0 2px;
     }
@@ -705,7 +713,7 @@
     }
 
     .create-discussion {
-      background: var(--surface-container);
+      background: var(--surface-container-low);
       border-radius: var(--radius-lg);
       padding: var(--spacing-lg);
       margin-bottom: var(--spacing-lg);
@@ -719,7 +727,7 @@
       margin-bottom: var(--spacing-md);
       border: 2px solid var(--outline-variant);
       border-radius: var(--radius-md);
-      background: var(--surface-container-low);
+      background: var(--surface);
       color: var(--on-surface);
       font-size: 0.95rem;
       font-family: inherit;
@@ -755,7 +763,7 @@
     }
 
     .discussion-item {
-      background: var(--surface-container);
+      background: var(--surface);
       border-radius: var(--radius-lg);
       padding: var(--spacing-lg);
       margin-bottom: var(--spacing-md);
@@ -839,9 +847,16 @@
       padding: 0;
     }
 
+    /* 去掉 Markdown 链接下划线 */
     .comment-markdown a {
       color: var(--primary);
       font-weight: 500;
+      text-decoration: none;
+    }
+
+    .comment-markdown a:hover {
+      text-decoration: none;
+      opacity: 0.8;
     }
 
     .comment-markdown blockquote {
@@ -920,12 +935,13 @@
     .disclaimer {
       text-align: center;
       padding: var(--spacing-lg);
-      background: var(--surface-container);
+      background: var(--surface);
       border-radius: var(--radius-xl);
       color: var(--on-surface-variant);
       font-size: 0.85rem;
       margin-top: var(--spacing-lg);
       border: 1px solid var(--outline-variant);
+      box-shadow: var(--elevation-1);
     }
 
     /* ========== 页脚 ========== */
@@ -1031,7 +1047,7 @@
     }
 
     .toast-success {
-      border-left: 4px solid #4CAF50;
+      border-left: 4px solid #0C7D60;
     }
 
     .toast-error {
@@ -1047,6 +1063,15 @@
         opacity: 1;
         transform: translateX(-50%) translateY(0);
       }
+    }
+
+    /* ========== 全局链接样式 ========== */
+    a {
+      text-decoration: none;
+    }
+    
+    a:hover {
+      text-decoration: none;
     }
   </style>
 </head>
@@ -1068,6 +1093,7 @@
     </div>
     <h1>POSC资源站</h1>
     <p class="subtitle">
+      <i class="fab fa-github"></i>
       <span id="github-stars">0</span> stars · 
       <span id="github-forks">0</span> forks
     </p>
