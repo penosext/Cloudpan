@@ -84,7 +84,16 @@ function renderReleases(releases, term = '') {
       <div class="assets-list">${r.assets.map(a => {
         let name = esc(a.name);
         if (term) name = name.replace(new RegExp(`(${escRe(term)})`, 'gi'), '<span class="highlight">$1</span>');
-        return `<div class="asset-item"><div class="file-info"><div class="file-name"><i class="fas fa-file"></i> ${name}</div><div class="file-size"><i class="fas fa-database"></i> ${fmtSize(a.size)}</div></div><div class="file-actions"><a href="${a.browser_download_url}" class="btn-download btn-download-normal" target="_blank"><i class="fas fa-download"></i> 普通</a><a href="${proxy(a.browser_download_url)}" class="btn-download btn-download-fast" target="_blank"><i class="fas fa-bolt"></i> 高速</a></div></div>`;
+        return `<div class="asset-item">
+          <div class="file-info">
+            <div class="file-name"><i class="fas fa-file"></i> ${name}</div>
+            <div class="file-size"><i class="fas fa-database"></i> ${fmtSize(a.size)}</div>
+          </div>
+          <div class="file-actions">
+            <a href="${a.browser_download_url}" class="btn-download" target="_blank">普通下载</a>
+            <a href="${proxy(a.browser_download_url)}" class="btn-download" target="_blank">高速下载</a>
+          </div>
+        </div>`;
       }).join('')}</div>
       <button class="btn-toggle-assets" onclick="toggleAssets(this)"><i class="fas fa-layer-group"></i> 展开 (${r.assets.length})</button>
     </div>`).join('');
