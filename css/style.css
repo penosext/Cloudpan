@@ -215,17 +215,13 @@ body {
 .file-name { font-weight: 500; font-size: .95rem; word-break: break-all; }
 .file-name i { color: var(--primary); margin-right: var(--spacing-sm); }
 .file-size { font-size: .8rem; color: var(--on-surface-variant); margin-top: var(--spacing-xs); }
-.file-actions { display: flex; gap: var(--spacing-sm); flex-shrink: 0; }
+.file-actions { display: flex; align-items: center; gap: var(--spacing-lg); flex-shrink: 0; }
 .btn-download {
-  display: inline-flex; align-items: center; gap: var(--spacing-xs);
-  padding: var(--spacing-sm) var(--spacing-md); border-radius: var(--radius-full);
-  border: none; font-size: .85rem; font-weight: 500; cursor: pointer;
-  text-decoration: none; transition: all .2s; white-space: nowrap;
+  font-size: .85rem; font-weight: 500; cursor: pointer;
+  text-decoration: none; transition: opacity .2s; white-space: nowrap;
+  border: none; background: none; color: var(--primary); padding: 0;
 }
-.btn-download-normal { background: var(--surface-container-highest); color: var(--on-surface-variant); border: 1px solid var(--outline-variant); }
-.btn-download-normal:hover { background: var(--surface-container-high); }
-.btn-download-fast { background: var(--primary); color: var(--on-primary); }
-.btn-download-fast:hover { opacity: .9; }
+.btn-download:hover { opacity: .7; }
 .btn-toggle-assets {
   display: inline-flex; align-items: center; gap: var(--spacing-xs);
   padding: var(--spacing-sm) var(--spacing-lg); border-radius: var(--radius-full);
@@ -328,8 +324,7 @@ a:hover { text-decoration: none; }
   .stats-bar { gap: var(--spacing-md); padding: var(--spacing-md); }
   .stat-value { font-size: 1.2rem; }
   .asset-item { flex-direction: column; }
-  .file-actions { flex-direction: column; }
-  .btn-download { justify-content: center; }
+  .file-actions { flex-direction: row; }
   .card { padding: var(--spacing-md); }
   .floating-buttons { bottom: 16px; right: 12px; gap: 8px; }
   .floating-btn { width: 42px; height: 42px; }
