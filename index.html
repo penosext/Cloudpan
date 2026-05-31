@@ -20,19 +20,21 @@
     </button>
   </div>
 
-  <header class="header">
+  <header class="site-badge">
     <div class="logo-wrapper">
       <div class="logo-icon"><i class="fas fa-cloud"></i></div>
     </div>
-    <h1>POSC资源站</h1>
-    <p class="subtitle">
+    <div>
+      <h1>POSC资源站</h1>
+      <p class="subtitle">
       <i class="fab fa-github"></i>
       <span id="github-stars">0</span> stars · 
       <span id="github-forks">0</span> forks
-    </p>
+      </p>
+    </div>
   </header>
 
-  <div class="container">
+  <div class="container app-layout">
     <div class="stats-bar">
       <div class="stat-item">
         <div class="stat-value" id="release-count">0</div>
@@ -56,25 +58,27 @@
       <div id="announcement-content"><div class="loading"><div class="spinner"></div>加载中...</div></div>
     </div>
 
-    <div class="card">
-      <h2 class="section-title"><i class="fas fa-box-open"></i> 文件发布</h2>
-      <div class="search-wrapper">
-        <input type="text" id="file-search" class="search-input" placeholder="搜索文件名...">
-        <i class="fas fa-search search-icon"></i>
+    <aside class="file-sidebar">
+      <div class="card file-card">
+        <h2 class="section-title"><i class="fas fa-box-open"></i> 文件发布</h2>
+        <div class="search-wrapper">
+          <input type="text" id="file-search" class="search-input" placeholder="搜索文件名...">
+          <i class="fas fa-search search-icon"></i>
+        </div>
+        <div id="search-results-info" class="search-info">
+          <span id="search-count"></span>
+          <button class="btn-clear-search" onclick="clearSearch()"><i class="fas fa-times"></i> 清除</button>
+        </div>
+        <div id="releases"><div class="loading"><div class="spinner"></div>加载中...</div></div>
+        <div id="no-results" class="no-results">
+          <i class="fas fa-search"></i>
+          <h3>未找到匹配的文件</h3>
+          <p>请尝试使用其他关键词搜索</p>
+        </div>
       </div>
-      <div id="search-results-info" class="search-info">
-        <span id="search-count"></span>
-        <button class="btn-clear-search" onclick="clearSearch()"><i class="fas fa-times"></i> 清除</button>
-      </div>
-      <div id="releases"><div class="loading"><div class="spinner"></div>加载中...</div></div>
-      <div id="no-results" class="no-results">
-        <i class="fas fa-search"></i>
-        <h3>未找到匹配的文件</h3>
-        <p>请尝试使用其他关键词搜索</p>
-      </div>
-    </div>
+    </aside>
 
-    <div class="card">
+    <div class="card discussion-card">
       <h2 class="section-title"><i class="fas fa-comments"></i> 社区讨论</h2>
       <div class="create-discussion">
         <h3 style="font-weight:500;margin-bottom:16px;"><i class="fas fa-pen"></i> 新建讨论</h3>
