@@ -1,4 +1,4 @@
-// 主题切换
+// ===================== 主题切换 =====================
 function toggleTheme() {
   const current = document.body.getAttribute('data-theme') || 'light';
   const next = current === 'light' ? 'dark' : 'light';
@@ -12,7 +12,7 @@ function initTheme() {
   document.body.setAttribute('data-theme', saved);
 }
 
-// 滚动监听
+// ===================== 滚动监听 =====================
 function initScroll() {
   const themeBtn = document.getElementById('theme-toggle');
   const topBtn = document.getElementById('back-to-top');
@@ -30,9 +30,11 @@ function initScroll() {
   });
 }
 
-function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+function scrollToTop() { 
+  window.scrollTo({ top: 0, behavior: 'smooth' }); 
+}
 
-// 新增：滑到评论区
+// ===================== 快捷导航按钮 =====================
 function scrollToDiscussion() {
   const discussionCard = document.querySelector('.discussion-card');
   if (discussionCard) {
@@ -40,7 +42,6 @@ function scrollToDiscussion() {
   }
 }
 
-// 新增：聚焦搜索框并滚动到文件区
 function focusSearch() {
   const searchInput = document.getElementById('file-search');
   const fileSidebar = document.querySelector('.file-sidebar');
@@ -55,7 +56,16 @@ function focusSearch() {
   }, 400);
 }
 
-// GitHub 统计 - 统计第一个仓库的数据
+// ===================== GitHub Token 配置 =====================
+function setGithubToken() {
+  const token = prompt('请输入 GitHub Personal Access Token（需要 repo 权限）：\n\n获取方式：GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)');
+  if (token && token.trim()) {
+    localStorage.setItem('github_token', token.trim());
+    showToast('Token 已保存，现在可以直接回复评论了！');
+  }
+}
+
+// ===================== GitHub 统计 =====================
 async function fetchGitHubStats() {
   try {
     let repoList = [];
@@ -73,10 +83,12 @@ async function fetchGitHubStats() {
     document.getElementById('github-stars').textContent = data.stargazers_count;
     document.getElementById('github-forks').textContent = data.forks_count;
     document.getElementById('user-count').textContent = data.stargazers_count;
-  } catch { ['github-stars','github-forks','user-count'].forEach(id => document.getElementById(id).textContent = 'N/A'); }
+  } catch { 
+    ['github-stars','github-forks','user-count'].forEach(id => document.getElementById(id).textContent = 'N/A'); 
+  }
 }
 
-// 公告
+// ===================== 公告 =====================
 async function fetchAnnouncement() {
   const div = document.getElementById('announcement-content');
   try {
@@ -91,7 +103,7 @@ async function fetchAnnouncement() {
   }
 }
 
-// 文件发布 - 多仓库支持
+// ===================== 文件发布 - 多仓库支持 =====================
 let allReleases = [];
 let REPOS = [];
 
@@ -112,7 +124,6 @@ async function fetchRepoList() {
 
 async function fetchReleases() {
   try {
-    // 先获取仓库列表
     await fetchRepoList();
     
     allReleases = [];
@@ -133,7 +144,6 @@ async function fetchReleases() {
     const results = await Promise.all(promises);
     allReleases = results.flat();
     
-    // 按发布日期排序（最新的在前）
     allReleases.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
     
     document.getElementById('release-count').textContent = allReleases.length;
@@ -176,7 +186,7 @@ function toggleAssets(btn) {
   btn.innerHTML = list.classList.contains('show') ? `<i class="fas fa-layer-group"></i> 收起 (${n})` : `<i class="fas fa-layer-group"></i> 展开 (${n})`;
 }
 
-// 搜索
+// ===================== 搜索 =====================
 function initSearch() {
   document.getElementById('file-search').addEventListener('input', debounce(function() {
     const term = this.value.trim().toLowerCase();
@@ -203,7 +213,7 @@ function clearSearch() {
   renderReleases(allReleases);
 }
 
-// 讨论区
+// ===================== 讨论区 =====================
 async function fetchDiscussions() {
   try {
     const issues = await (await fetch('https://api.github.com/repos/penosext/Cloudpan/issues')).json();
@@ -212,35 +222,150 @@ async function fetchDiscussions() {
         <div class="discussion-header"><img src="${i.user.avatar_url}" class="avatar" alt=""><div><div class="discussion-author">${i.user.login}</div><div class="discussion-date">${new Date(i.created_at).toLocaleString('zh-CN')}</div></div></div>
         <div class="discussion-title"><i class="fas fa-comment-dots"></i> ${esc(i.title)}</div>
         <div class="comment-markdown">${marked.parse(i.body || '')}</div>
-        <button class="btn-load-comments" onclick="loadComments(this,${i.number})"><i class="fas fa-comments"></i> 评论 (${i.comments})</button>
+        <div style="display:flex;gap:var(--spacing-sm);flex-wrap:wrap;">
+          <button class="btn-load-comments" onclick="loadComments(this,${i.number})"><i class="fas fa-comments"></i> 评论 (${i.comments})</button>
+          <button class="btn-reply" onclick="openReplyModal(${i.number}, '${esc(i.user.login).replace(/'/g,"\\'")}', '${esc((i.body||'').substring(0,200)).replace(/'/g,"\\'").replace(/\n/g,' ').replace(/`/g,'\\`')}')"><i class="fas fa-reply"></i> 回复楼主</button>
+        </div>
         <div class="comments-container"></div>
       </div>`).join('');
-  } catch { showToast('加载讨论失败', 'error'); }
+  } catch { 
+    showToast('加载讨论失败', 'error'); 
+  }
 }
 
 async function loadComments(btn, num) {
-  const container = btn.nextElementSibling;
-  if (container.children.length) { container.classList.toggle('show'); return; }
+  // 找到对应的 comments-container
+  const discussionItem = btn.closest('.discussion-item');
+  const container = discussionItem.querySelector('.comments-container');
+  
+  if (container.children.length) { 
+    container.classList.toggle('show'); 
+    return; 
+  }
+  
   try {
-    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
+    btn.disabled = true; 
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
     const comments = await (await fetch(`https://api.github.com/repos/penosext/Cloudpan/issues/${num}/comments`)).json();
     container.innerHTML = comments.map(c => `
-      <div class="comment-item"><img src="${c.user.avatar_url}" class="avatar" alt=""><div><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="discussion-author">${c.user.login}</span><span class="discussion-date">${new Date(c.created_at).toLocaleString('zh-CN')}</span></div><div class="comment-markdown">${marked.parse(c.body || '')}</div></div></div>`).join('');
+      <div class="comment-item">
+        <img src="${c.user.avatar_url}" class="avatar" alt="">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+            <span class="discussion-author">${c.user.login}</span>
+            <span class="discussion-date">${new Date(c.created_at).toLocaleString('zh-CN')}</span>
+          </div>
+          <div class="comment-markdown">${marked.parse(c.body || '')}</div>
+          <button class="btn-reply" onclick="openReplyModal(${num}, '${esc(c.user.login).replace(/'/g,"\\'")}', '${esc((c.body||'').substring(0,200)).replace(/'/g,"\\'").replace(/\n/g,' ').replace(/`/g,'\\`')}')"><i class="fas fa-reply"></i> 回复</button>
+        </div>
+      </div>`).join('');
+    if (comments.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--on-surface-variant);">暂无评论，快来参与讨论吧</div>';
+    }
     btn.innerHTML = `<i class="fas fa-comments"></i> 隐藏 (${comments.length})`;
     container.classList.add('show');
-  } catch { container.innerHTML = '<div style="text-align:center;color:var(--error);padding:16px">加载失败</div>'; }
-  finally { btn.disabled = false; }
+  } catch { 
+    container.innerHTML = '<div style="text-align:center;color:var(--error);padding:16px">加载失败</div>'; 
+  } finally { 
+    btn.disabled = false; 
+  }
 }
 
 function createNewIssue() {
   const title = document.getElementById('issueTitle'), body = document.getElementById('issueBody');
-  if (!title.value.trim()) { title.style.borderColor = 'var(--error)'; title.focus(); showToast('请填写标题', 'error'); setTimeout(() => title.style.borderColor = '', 2000); return; }
+  if (!title.value.trim()) { 
+    title.style.borderColor = 'var(--error)'; 
+    title.focus(); 
+    showToast('请填写标题', 'error'); 
+    setTimeout(() => title.style.borderColor = '', 2000); 
+    return; 
+  }
   window.open(`https://github.com/penosext/Cloudpan/issues/new?${new URLSearchParams({ title: title.value.trim(), body: body.value.trim(), labels: 'user-generated' })}`, '_blank');
   title.value = body.value = '';
   showToast('讨论创建成功！请在GitHub完成提交');
 }
 
-// 工具函数
+// ===================== 回复功能 =====================
+let replyTarget = { issueNumber: null, replyToUser: null };
+
+function openReplyModal(issueNumber, commentUser, commentBody) {
+  replyTarget.issueNumber = issueNumber;
+  replyTarget.replyToUser = commentUser;
+  document.getElementById('reply-context').innerHTML = `
+    <div style="font-weight:500;margin-bottom:4px;display:flex;align-items:center;gap:8px;"><i class="fas fa-reply"></i> 回复 @${esc(commentUser)}</div>
+    <div style="opacity:.8;font-size:.85rem;">${marked.parse(commentBody || '（无内容）')}</div>
+  `;
+  document.getElementById('replyBody').value = `@${commentUser} `;
+  document.getElementById('reply-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('replyBody').focus(), 100);
+}
+
+function closeReplyModal() {
+  document.getElementById('reply-modal').style.display = 'none';
+  replyTarget = { issueNumber: null, replyToUser: null };
+}
+
+async function submitReply() {
+  const body = document.getElementById('replyBody').value.trim();
+  if (!body) {
+    showToast('请输入回复内容', 'error');
+    return;
+  }
+  const btn = document.getElementById('btn-submit-reply');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
+  
+  try {
+    const token = localStorage.getItem('github_token');
+    if (token) {
+      const res = await fetch(`https://api.github.com/repos/penosext/Cloudpan/issues/${replyTarget.issueNumber}/comments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/vnd.github.v3+json'
+        },
+        body: JSON.stringify({ body: body })
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || `HTTP ${res.status}`);
+      }
+      showToast('✅ 回复成功！');
+      closeReplyModal();
+      // 重新加载讨论区
+      await fetchDiscussions();
+    } else {
+      // 无 Token：打开 GitHub 新评论页面
+      showToast('未配置Token，即将跳转到GitHub完成回复', 'warning');
+      setTimeout(() => {
+        window.open(`https://github.com/penosext/Cloudpan/issues/${replyTarget.issueNumber}#new_comment_field`, '_blank');
+      }, 800);
+      closeReplyModal();
+    }
+  } catch (e) {
+    showToast('回复失败: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane"></i> 提交回复';
+  }
+}
+
+// 点击弹窗遮罩关闭
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'reply-modal') {
+    closeReplyModal();
+  }
+});
+
+// ESC 关闭弹窗
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && document.getElementById('reply-modal').style.display === 'flex') {
+    closeReplyModal();
+  }
+});
+
+// ===================== 工具函数 =====================
 const esc = s => (''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const proxy = u => `https://ghproxy.net/${encodeURI(u)}`;
@@ -251,14 +376,15 @@ function showToast(msg, type = 'success') {
   const old = document.querySelector('.toast'); if (old) old.remove();
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
-  t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${esc(msg)}`;
+  t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':type==='error'?'exclamation-circle':'exclamation-triangle'}"></i> ${esc(msg)}`;
   document.body.appendChild(t);
   setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 5000);
 }
 
-// 初始化
+// ===================== 初始化 =====================
 document.addEventListener('DOMContentLoaded', () => {
-  initTheme(); initScroll();
+  initTheme(); 
+  initScroll();
   Promise.all([fetchAnnouncement(), fetchReleases(), fetchDiscussions(), fetchGitHubStats()]);
   initSearch();
 });
