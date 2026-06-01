@@ -117,6 +117,10 @@ body {
 .back-to-top { opacity: 0; transform: translateY(20px) scale(.8); pointer-events: none; }
 .back-to-top.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
 
+/* 新增：搜索和评论按钮的图标微调颜色 */
+.search-float i { color: var(--primary); }
+.scroll-to-discussion i { color: var(--primary); }
+
 /* 容器 */
 .container { 
   width: min(100%, 1480px);
