@@ -1,264 +1,110 @@
-// 主题切换
-function toggleTheme() {
-  const current = document.body.getAttribute('data-theme') || 'light';
-  const next = current === 'light' ? 'dark' : 'light';
-  document.body.setAttribute('data-theme', next);
-  localStorage.setItem('theme', next);
-}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>POSC资源站 | 资源中心</title>
+  <script src="./js/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <!-- 右下角浮动按钮 -->
+  <div class="floating-buttons">
+    <button class="floating-btn theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
+      <i class="fas fa-sun"></i>
+      <i class="fas fa-moon"></i>
+    </button>
+    <!-- 新增：搜索按钮 -->
+    <button class="floating-btn search-float" id="search-float" onclick="focusSearch()" aria-label="搜索文件">
+      <i class="fas fa-search"></i>
+    </button>
+    <!-- 新增：滑到评论区按钮 -->
+    <button class="floating-btn scroll-to-discussion" id="scroll-to-discussion" onclick="scrollToDiscussion()" aria-label="前往评论区">
+      <i class="fas fa-comments"></i>
+    </button>
+    <button class="floating-btn back-to-top" id="back-to-top" onclick="scrollToTop()" aria-label="回到顶部">
+      <i class="fas fa-arrow-up"></i>
+    </button>
+  </div>
 
-function initTheme() {
-  const saved = localStorage.getItem('theme') || 
-    (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  document.body.setAttribute('data-theme', saved);
-}
+  <header class="site-badge">
+    <div class="logo-wrapper">
+      <div class="logo-icon"><i class="fas fa-cloud"></i></div>
+    </div>
+    <div>
+      <h1>POSC资源站</h1>
+      <p class="subtitle">
+      <i class="fab fa-github"></i>
+      <span id="github-stars">0</span> stars · 
+      <span id="github-forks">0</span> forks
+      </p>
+    </div>
+  </header>
 
-// 滚动监听
-function initScroll() {
-  const themeBtn = document.getElementById('theme-toggle');
-  const topBtn = document.getElementById('back-to-top');
-  let ticking = false;
-  window.addEventListener('scroll', () => {
-    if (!ticking) {
-      requestAnimationFrame(() => {
-        const show = window.scrollY > 300;
-        themeBtn.classList.toggle('hidden', show);
-        topBtn.classList.toggle('show', show);
-        ticking = false;
-      });
-      ticking = true;
-    }
-  });
-}
-
-function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
-
-// 新增：滑到评论区
-function scrollToDiscussion() {
-  const discussionCard = document.querySelector('.discussion-card');
-  if (discussionCard) {
-    discussionCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-}
-
-// 新增：聚焦搜索框并滚动到文件区
-function focusSearch() {
-  const searchInput = document.getElementById('file-search');
-  const fileSidebar = document.querySelector('.file-sidebar');
-  if (fileSidebar) {
-    fileSidebar.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-  setTimeout(() => {
-    if (searchInput) {
-      searchInput.focus();
-      searchInput.select();
-    }
-  }, 400);
-}
-
-// GitHub 统计 - 统计第一个仓库的数据
-async function fetchGitHubStats() {
-  try {
-    let repoList = [];
-    try {
-      const res = await fetch('https://raw.githubusercontent.com/penosext/Cloudpan/main/repos.txt');
-      if (res.ok) {
-        const text = await res.text();
-        repoList = text.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('#'));
-      }
-    } catch {}
-    if (!repoList.length) repoList = ['penosext/Cloudpan'];
-    
-    const res = await fetch(`https://api.github.com/repos/${repoList[0]}`);
-    const data = await res.json();
-    document.getElementById('github-stars').textContent = data.stargazers_count;
-    document.getElementById('github-forks').textContent = data.forks_count;
-    document.getElementById('user-count').textContent = data.stargazers_count;
-  } catch { ['github-stars','github-forks','user-count'].forEach(id => document.getElementById(id).textContent = 'N/A'); }
-}
-
-// 公告
-async function fetchAnnouncement() {
-  const div = document.getElementById('announcement-content');
-  try {
-    div.innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
-    const res = await fetch('https://raw.githubusercontent.com/penosext/Cloudpan/main/notice.md');
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    const date = res.headers.get('last-modified');
-    div.innerHTML = `<div class="announcement-content">${marked.parse(text || '暂无公告')}${date ? `<div class="announcement-meta"><i class="far fa-clock"></i> 更新: ${new Date(date).toLocaleDateString('zh-CN')}</div>` : ''}</div>`;
-  } catch (e) {
-    div.innerHTML = `<div style="text-align:center;padding:24px;color:var(--error)"><i class="fas fa-exclamation-triangle"></i> ${e.message}<br><button onclick="fetchAnnouncement()" class="btn-refresh" style="margin-top:8px">重试</button></div>`;
-  }
-}
-
-// 文件发布 - 多仓库支持
-let allReleases = [];
-let REPOS = [];
-
-async function fetchRepoList() {
-  try {
-    const res = await fetch('https://raw.githubusercontent.com/penosext/Cloudpan/main/repo');
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const text = await res.text();
-    REPOS = text.split('\n')
-      .map(line => line.trim())
-      .filter(line => line && !line.startsWith('#'));
-    if (!REPOS.length) throw new Error('仓库列表为空');
-  } catch (e) {
-    showToast('仓库列表加载失败，使用默认仓库: ' + e.message, 'warning');
-    REPOS = ['penosext/Cloudpan'];
-  }
-}
-
-async function fetchReleases() {
-  try {
-    // 先获取仓库列表
-    await fetchRepoList();
-    
-    allReleases = [];
-    document.getElementById('releases').innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
-    
-    const promises = REPOS.map(repo =>
-      fetch(`https://api.github.com/repos/${repo}/releases`)
-        .then(res => {
-          if (!res.ok) throw new Error(`${repo}: HTTP ${res.status}`);
-          return res.json();
-        })
-        .catch(err => {
-          console.warn(`加载仓库 ${repo} 失败:`, err.message);
-          return [];
-        })
-    );
-    
-    const results = await Promise.all(promises);
-    allReleases = results.flat();
-    
-    // 按发布日期排序（最新的在前）
-    allReleases.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
-    
-    document.getElementById('release-count').textContent = allReleases.length;
-    document.getElementById('file-count').textContent = allReleases.reduce((a, r) => a + r.assets.length, 0);
-    renderReleases(allReleases);
-    
-    if (allReleases.length === 0) {
-      showToast('所有仓库均无可用文件', 'warning');
-    }
-  } catch (e) { 
-    showToast('文件加载失败: ' + e.message, 'error'); 
-  }
-}
-
-function renderReleases(releases, term = '') {
-  const container = document.getElementById('releases');
-  if (!releases.length && !term) { 
-    container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无文件</p></div>'; 
-    return; 
-  }
-  container.innerHTML = releases.map(r => `
-    <div class="release-item">
-      <div class="release-header">
-        <div class="release-name"><i class="fas fa-tag"></i> ${esc(r.name || r.tag_name)}</div>
-        <div class="release-date"><i class="far fa-calendar-alt"></i> ${new Date(r.published_at).toLocaleDateString('zh-CN')}</div>
+  <div class="container app-layout">
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-value" id="release-count">0</div>
+        <div class="stat-label">资源发布</div>
       </div>
-      <div class="assets-list">${r.assets.map(a => {
-        let name = esc(a.name);
-        if (term) name = name.replace(new RegExp(`(${escRe(term)})`, 'gi'), '<span class="highlight">$1</span>');
-        return `<div class="asset-item"><div class="file-info"><div class="file-name"><i class="fas fa-file"></i> ${name}</div><div class="file-size"><i class="fas fa-database"></i> ${fmtSize(a.size)}</div></div><div class="file-actions"><a href="${a.browser_download_url}" class="btn-download btn-download-normal" target="_blank"><i class="fas fa-download"></i> 普通</a><a href="${proxy(a.browser_download_url)}" class="btn-download btn-download-fast" target="_blank"><i class="fas fa-bolt"></i> 高速</a></div></div>`;
-      }).join('')}</div>
-      <button class="btn-toggle-assets" onclick="toggleAssets(this)"><i class="fas fa-layer-group"></i> 展开 (${r.assets.length})</button>
-    </div>`).join('');
-}
+      <div class="stat-item">
+        <div class="stat-value" id="file-count">0</div>
+        <div class="stat-label">文件总数</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="user-count">0</div>
+        <div class="stat-label">Stars</div>
+      </div>
+    </div>
 
-function toggleAssets(btn) {
-  const list = btn.previousElementSibling;
-  list.classList.toggle('show');
-  const n = list.querySelectorAll('.asset-item').length;
-  btn.innerHTML = list.classList.contains('show') ? `<i class="fas fa-layer-group"></i> 收起 (${n})` : `<i class="fas fa-layer-group"></i> 展开 (${n})`;
-}
+    <div class="announcement-card">
+      <div class="announcement-header">
+        <h2 class="announcement-title"><i class="fas fa-bullhorn"></i> 最新公告</h2>
+        <button class="btn-refresh" onclick="fetchAnnouncement()"><i class="fas fa-sync-alt"></i> 刷新</button>
+      </div>
+      <div id="announcement-content"><div class="loading"><div class="spinner"></div>加载中...</div></div>
+    </div>
 
-// 搜索
-function initSearch() {
-  document.getElementById('file-search').addEventListener('input', debounce(function() {
-    const term = this.value.trim().toLowerCase();
-    const info = document.getElementById('search-results-info');
-    const noRes = document.getElementById('no-results');
-    if (!term) { info.classList.remove('show'); noRes.classList.remove('show'); renderReleases(allReleases); return; }
-    info.classList.add('show');
-    let count = 0;
-    const filtered = allReleases.map(r => {
-      const assets = r.assets.filter(a => a.name.toLowerCase().includes(term));
-      count += assets.length;
-      return { ...r, assets };
-    }).filter(r => r.assets.length);
-    document.getElementById('search-count').textContent = `找到 ${count} 个结果`;
-    renderReleases(filtered, term);
-    noRes.classList.toggle('show', !count);
-  }, 300));
-}
+    <aside class="file-sidebar">
+      <div class="card file-card">
+        <h2 class="section-title"><i class="fas fa-box-open"></i> 文件发布</h2>
+        <div class="search-wrapper">
+          <input type="text" id="file-search" class="search-input" placeholder="搜索文件名...">
+          <i class="fas fa-search search-icon"></i>
+        </div>
+        <div id="search-results-info" class="search-info">
+          <span id="search-count"></span>
+          <button class="btn-clear-search" onclick="clearSearch()"><i class="fas fa-times"></i> 清除</button>
+        </div>
+        <div id="releases"><div class="loading"><div class="spinner"></div>加载中...</div></div>
+        <div id="no-results" class="no-results">
+          <i class="fas fa-search"></i>
+          <h3>未找到匹配的文件</h3>
+          <p>请尝试使用其他关键词搜索</p>
+        </div>
+      </div>
+    </aside>
 
-function clearSearch() {
-  document.getElementById('file-search').value = '';
-  document.getElementById('search-results-info').classList.remove('show');
-  document.getElementById('no-results').classList.remove('show');
-  renderReleases(allReleases);
-}
+    <div class="card discussion-card">
+      <h2 class="section-title"><i class="fas fa-comments"></i> 社区讨论</h2>
+      <div class="create-discussion">
+        <h3 style="font-weight:500;margin-bottom:16px;"><i class="fas fa-pen"></i> 新建讨论</h3>
+        <input type="text" id="issueTitle" class="form-input" placeholder="讨论标题（必填）">
+        <textarea id="issueBody" class="form-textarea" placeholder="讨论内容（支持Markdown）" rows="4"></textarea>
+        <button class="btn-submit" onclick="createNewIssue()"><i class="fas fa-plus-circle"></i> 创建</button>
+      </div>
+      <div id="discussions"><div class="loading"><div class="spinner"></div>加载中...</div></div>
+    </div>
 
-// 讨论区
-async function fetchDiscussions() {
-  try {
-    const issues = await (await fetch('https://api.github.com/repos/penosext/Cloudpan/issues')).json();
-    document.getElementById('discussions').innerHTML = issues.map(i => `
-      <div class="discussion-item">
-        <div class="discussion-header"><img src="${i.user.avatar_url}" class="avatar" alt=""><div><div class="discussion-author">${i.user.login}</div><div class="discussion-date">${new Date(i.created_at).toLocaleString('zh-CN')}</div></div></div>
-        <div class="discussion-title"><i class="fas fa-comment-dots"></i> ${esc(i.title)}</div>
-        <div class="comment-markdown">${marked.parse(i.body || '')}</div>
-        <button class="btn-load-comments" onclick="loadComments(this,${i.number})"><i class="fas fa-comments"></i> 评论 (${i.comments})</button>
-        <div class="comments-container"></div>
-      </div>`).join('');
-  } catch { showToast('加载讨论失败', 'error'); }
-}
+    <div class="disclaimer">
+      <strong><i class="fas fa-exclamation-circle"></i> 免责声明：</strong>
+      本站所有资源均来自网络，下载仅供学习交流，不得用于商业用途。如需删除内容，请联系 wyxdlz54188
+    </div>
 
-async function loadComments(btn, num) {
-  const container = btn.nextElementSibling;
-  if (container.children.length) { container.classList.toggle('show'); return; }
-  try {
-    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
-    const comments = await (await fetch(`https://api.github.com/repos/penosext/Cloudpan/issues/${num}/comments`)).json();
-    container.innerHTML = comments.map(c => `
-      <div class="comment-item"><img src="${c.user.avatar_url}" class="avatar" alt=""><div><div style="display:flex;align-items:center;gap:8px;margin-bottom:4px"><span class="discussion-author">${c.user.login}</span><span class="discussion-date">${new Date(c.created_at).toLocaleString('zh-CN')}</span></div><div class="comment-markdown">${marked.parse(c.body || '')}</div></div></div>`).join('');
-    btn.innerHTML = `<i class="fas fa-comments"></i> 隐藏 (${comments.length})`;
-    container.classList.add('show');
-  } catch { container.innerHTML = '<div style="text-align:center;color:var(--error);padding:16px">加载失败</div>'; }
-  finally { btn.disabled = false; }
-}
+    <div class="footer"><p>&copy; 2025 POSC</p></div>
+  </div>
 
-function createNewIssue() {
-  const title = document.getElementById('issueTitle'), body = document.getElementById('issueBody');
-  if (!title.value.trim()) { title.style.borderColor = 'var(--error)'; title.focus(); showToast('请填写标题', 'error'); setTimeout(() => title.style.borderColor = '', 2000); return; }
-  window.open(`https://github.com/penosext/Cloudpan/issues/new?${new URLSearchParams({ title: title.value.trim(), body: body.value.trim(), labels: 'user-generated' })}`, '_blank');
-  title.value = body.value = '';
-  showToast('讨论创建成功！请在GitHub完成提交');
-}
-
-// 工具函数
-const esc = s => (''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-const proxy = u => `https://ghproxy.net/${encodeURI(u)}`;
-const fmtSize = b => { if(!b) return '0 Bytes'; const u = ['Bytes','KB','MB','GB'], e = Math.floor(Math.log(b)/Math.log(1024)); return (b/Math.pow(1024,e)).toFixed(2)+' '+u[e]; };
-const debounce = (f, w) => { let t; return function(...a) { clearTimeout(t); t = setTimeout(() => f.apply(this, a), w); }; };
-
-function showToast(msg, type = 'success') {
-  const old = document.querySelector('.toast'); if (old) old.remove();
-  const t = document.createElement('div');
-  t.className = `toast toast-${type}`;
-  t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'exclamation-circle'}"></i> ${esc(msg)}`;
-  document.body.appendChild(t);
-  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 5000);
-}
-
-// 初始化
-document.addEventListener('DOMContentLoaded', () => {
-  initTheme(); initScroll();
-  Promise.all([fetchAnnouncement(), fetchReleases(), fetchDiscussions(), fetchGitHubStats()]);
-  initSearch();
-});
+  <script src="./js/app.js"></script>
+</body>
+</html>
