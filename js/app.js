@@ -58,10 +58,19 @@ function focusSearch() {
 
 // ===================== GitHub Token 配置 =====================
 function setGithubToken() {
-  const token = prompt('请输入 GitHub Personal Access Token（需要 repo 权限）：\n\n获取方式：GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)');
-  if (token && token.trim()) {
+  const currentToken = localStorage.getItem('github_token');
+  const msg = currentToken 
+    ? `当前已配置 Token: ${currentToken.substring(0, 8)}...\n\n输入新 Token 替换，或点取消保留：`
+    : '请输入 GitHub Personal Access Token（需要 repo 权限）：\n\n获取方式：\nGitHub Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token\n\n勾选 public_repo 权限即可';
+  const token = prompt(msg);
+  if (token === null) return; // 用户点取消
+  if (token.trim()) {
     localStorage.setItem('github_token', token.trim());
-    showToast('Token 已保存，现在可以直接回复评论了！');
+    showToast('✅ Token 已保存，现在可以直接回复评论了！', 'success');
+  } else if (currentToken) {
+    // 用户清空了输入，删除 token
+    localStorage.removeItem('github_token');
+    showToast('Token 已清除', 'info');
   }
 }
 
@@ -79,6 +88,7 @@ async function fetchGitHubStats() {
     if (!repoList.length) repoList = ['penosext/Cloudpan'];
     
     const res = await fetch(`https://api.github.com/repos/${repoList[0]}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     document.getElementById('github-stars').textContent = data.stargazers_count;
     document.getElementById('github-forks').textContent = data.forks_count;
@@ -117,7 +127,7 @@ async function fetchRepoList() {
       .filter(line => line && !line.startsWith('#'));
     if (!REPOS.length) throw new Error('仓库列表为空');
   } catch (e) {
-    showToast('仓库列表加载失败，使用默认仓库: ' + e.message, 'warning');
+    showToast('仓库列表加载失败，使用默认仓库', 'warning');
     REPOS = ['penosext/Cloudpan'];
   }
 }
@@ -217,24 +227,27 @@ function clearSearch() {
 async function fetchDiscussions() {
   try {
     const issues = await (await fetch('https://api.github.com/repos/penosext/Cloudpan/issues')).json();
-    document.getElementById('discussions').innerHTML = issues.map(i => `
+    document.getElementById('discussions').innerHTML = issues.map(i => {
+      const safeUser = esc(i.user.login).replace(/'/g, "\\'");
+      const safeBody = esc((i.body || '').substring(0, 200)).replace(/'/g, "\\'").replace(/\n/g, ' ').replace(/`/g, '\\`');
+      return `
       <div class="discussion-item">
         <div class="discussion-header"><img src="${i.user.avatar_url}" class="avatar" alt=""><div><div class="discussion-author">${i.user.login}</div><div class="discussion-date">${new Date(i.created_at).toLocaleString('zh-CN')}</div></div></div>
         <div class="discussion-title"><i class="fas fa-comment-dots"></i> ${esc(i.title)}</div>
         <div class="comment-markdown">${marked.parse(i.body || '')}</div>
         <div style="display:flex;gap:var(--spacing-sm);flex-wrap:wrap;">
           <button class="btn-load-comments" onclick="loadComments(this,${i.number})"><i class="fas fa-comments"></i> 评论 (${i.comments})</button>
-          <button class="btn-reply" onclick="openReplyModal(${i.number}, '${esc(i.user.login).replace(/'/g,"\\'")}', '${esc((i.body||'').substring(0,200)).replace(/'/g,"\\'").replace(/\n/g,' ').replace(/`/g,'\\`')}')"><i class="fas fa-reply"></i> 回复楼主</button>
+          <button class="btn-reply" onclick="openReplyModal(${i.number}, '${safeUser}', '${safeBody}')"><i class="fas fa-reply"></i> 回复楼主</button>
         </div>
         <div class="comments-container"></div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   } catch { 
     showToast('加载讨论失败', 'error'); 
   }
 }
 
 async function loadComments(btn, num) {
-  // 找到对应的 comments-container
   const discussionItem = btn.closest('.discussion-item');
   const container = discussionItem.querySelector('.comments-container');
   
@@ -247,7 +260,10 @@ async function loadComments(btn, num) {
     btn.disabled = true; 
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
     const comments = await (await fetch(`https://api.github.com/repos/penosext/Cloudpan/issues/${num}/comments`)).json();
-    container.innerHTML = comments.map(c => `
+    container.innerHTML = comments.map(c => {
+      const safeUser = esc(c.user.login).replace(/'/g, "\\'");
+      const safeBody = esc((c.body || '').substring(0, 200)).replace(/'/g, "\\'").replace(/\n/g, ' ').replace(/`/g, '\\`');
+      return `
       <div class="comment-item">
         <img src="${c.user.avatar_url}" class="avatar" alt="">
         <div style="flex:1;min-width:0;">
@@ -256,9 +272,10 @@ async function loadComments(btn, num) {
             <span class="discussion-date">${new Date(c.created_at).toLocaleString('zh-CN')}</span>
           </div>
           <div class="comment-markdown">${marked.parse(c.body || '')}</div>
-          <button class="btn-reply" onclick="openReplyModal(${num}, '${esc(c.user.login).replace(/'/g,"\\'")}', '${esc((c.body||'').substring(0,200)).replace(/'/g,"\\'").replace(/\n/g,' ').replace(/`/g,'\\`')}')"><i class="fas fa-reply"></i> 回复</button>
+          <button class="btn-reply" onclick="openReplyModal(${num}, '${safeUser}', '${safeBody}')"><i class="fas fa-reply"></i> 回复</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
     if (comments.length === 0) {
       container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--on-surface-variant);">暂无评论，快来参与讨论吧</div>';
     }
@@ -271,18 +288,31 @@ async function loadComments(btn, num) {
   }
 }
 
+// ===================== 创建议题 =====================
 function createNewIssue() {
-  const title = document.getElementById('issueTitle'), body = document.getElementById('issueBody');
-  if (!title.value.trim()) { 
-    title.style.borderColor = 'var(--error)'; 
-    title.focus(); 
+  const titleEl = document.getElementById('issueTitle');
+  const bodyEl = document.getElementById('issueBody');
+  const title = titleEl.value.trim();
+  const body = bodyEl.value.trim();
+  
+  if (!title) { 
+    titleEl.style.borderColor = 'var(--error)'; 
+    titleEl.focus(); 
     showToast('请填写标题', 'error'); 
-    setTimeout(() => title.style.borderColor = '', 2000); 
+    setTimeout(() => titleEl.style.borderColor = '', 2000); 
     return; 
   }
-  window.open(`https://github.com/penosext/Cloudpan/issues/new?${new URLSearchParams({ title: title.value.trim(), body: body.value.trim(), labels: 'user-generated' })}`, '_blank');
-  title.value = body.value = '';
-  showToast('讨论创建成功！请在GitHub完成提交');
+  
+  const params = new URLSearchParams();
+  params.set('title', title);
+  if (body) params.set('body', body);
+  params.set('labels', 'user-generated');
+  
+  window.open('https://github.com/penosext/Cloudpan/issues/new?' + params.toString(), '_blank');
+  
+  titleEl.value = '';
+  bodyEl.value = '';
+  showToast('已跳转到 GitHub，请点击 Submit new issue 完成提交', 'info');
 }
 
 // ===================== 回复功能 =====================
@@ -318,6 +348,7 @@ async function submitReply() {
   try {
     const token = localStorage.getItem('github_token');
     if (token) {
+      // 有 Token：直接通过 API 提交
       const res = await fetch(`https://api.github.com/repos/penosext/Cloudpan/issues/${replyTarget.issueNumber}/comments`, {
         method: 'POST',
         headers: {
@@ -331,17 +362,21 @@ async function submitReply() {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || `HTTP ${res.status}`);
       }
-      showToast('✅ 回复成功！');
+      showToast('✅ 回复成功！', 'success');
       closeReplyModal();
-      // 重新加载讨论区
       await fetchDiscussions();
     } else {
-      // 无 Token：打开 GitHub 新评论页面
-      showToast('未配置Token，即将跳转到GitHub完成回复', 'warning');
-      setTimeout(() => {
-        window.open(`https://github.com/penosext/Cloudpan/issues/${replyTarget.issueNumber}#new_comment_field`, '_blank');
-      }, 800);
+      // 无 Token：复制到剪贴板 + 跳转
+      try {
+        await navigator.clipboard.writeText(body);
+        showToast('📋 回复内容已复制，请在 GitHub 页面粘贴提交', 'info');
+      } catch {
+        showToast('已跳转到 GitHub，请手动粘贴回复内容', 'info');
+      }
       closeReplyModal();
+      setTimeout(() => {
+        window.open(`https://github.com/penosext/Cloudpan/issues/${replyTarget.issueNumber}`, '_blank');
+      }, 400);
     }
   } catch (e) {
     showToast('回复失败: ' + e.message, 'error');
@@ -366,17 +401,23 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ===================== 工具函数 =====================
-const esc = s => (''+s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const proxy = u => `https://ghproxy.net/${encodeURI(u)}`;
-const fmtSize = b => { if(!b) return '0 Bytes'; const u = ['Bytes','KB','MB','GB'], e = Math.floor(Math.log(b)/Math.log(1024)); return (b/Math.pow(1024,e)).toFixed(2)+' '+u[e]; };
+const fmtSize = b => { if(!b) return '0 Bytes'; const u = ['Bytes','KB','MB','GB']; const e = Math.floor(Math.log(b)/Math.log(1024)); return (b/Math.pow(1024,e)).toFixed(2)+' '+u[e]; };
 const debounce = (f, w) => { let t; return function(...a) { clearTimeout(t); t = setTimeout(() => f.apply(this, a), w); }; };
 
 function showToast(msg, type = 'success') {
   const old = document.querySelector('.toast'); if (old) old.remove();
+  const icons = {
+    success: 'check-circle',
+    error: 'exclamation-circle',
+    warning: 'exclamation-triangle',
+    info: 'info-circle'
+  };
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
-  t.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':type==='error'?'exclamation-circle':'exclamation-triangle'}"></i> ${esc(msg)}`;
+  t.innerHTML = `<i class="fas fa-${icons[type] || icons.success}"></i> ${esc(msg)}`;
   document.body.appendChild(t);
   setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, 5000);
 }
