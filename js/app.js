@@ -32,10 +32,20 @@ function initScroll() {
 
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-// GitHub 统计
+// GitHub 统计 - 统计第一个仓库的数据
 async function fetchGitHubStats() {
   try {
-    const res = await fetch('https://api.github.com/repos/penosext/Cloudpan');
+    let repoList = [];
+    try {
+      const res = await fetch('https://raw.githubusercontent.com/penosext/Cloudpan/main/repos.txt');
+      if (res.ok) {
+        const text = await res.text();
+        repoList = text.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('#'));
+      }
+    } catch {}
+    if (!repoList.length) repoList = ['penosext/Cloudpan'];
+    
+    const res = await fetch(`https://api.github.com/repos/${repoList[0]}`);
     const data = await res.json();
     document.getElementById('github-stars').textContent = data.stargazers_count;
     document.getElementById('github-forks').textContent = data.forks_count;
@@ -58,23 +68,69 @@ async function fetchAnnouncement() {
   }
 }
 
-// 文件发布
+// 文件发布 - 多仓库支持
 let allReleases = [];
+let REPOS = [];
+
+async function fetchRepoList() {
+  try {
+    const res = await fetch('https://raw.githubusercontent.com/penosext/Cloudpan/main/repo');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    REPOS = text.split('\n')
+      .map(line => line.trim())
+      .filter(line => line && !line.startsWith('#'));
+    if (!REPOS.length) throw new Error('仓库列表为空');
+  } catch (e) {
+    showToast('仓库列表加载失败，使用默认仓库: ' + e.message, 'warning');
+    REPOS = ['penosext/Cloudpan'];
+  }
+}
 
 async function fetchReleases() {
   try {
-    const res = await fetch('https://api.github.com/repos/penosext/Cloudpan/releases');
-    const releases = await res.json();
-    allReleases = releases;
-    document.getElementById('release-count').textContent = releases.length;
-    document.getElementById('file-count').textContent = releases.reduce((a, r) => a + r.assets.length, 0);
-    renderReleases(releases);
-  } catch (e) { showToast('文件加载失败: ' + e.message, 'error'); }
+    // 先获取仓库列表
+    await fetchRepoList();
+    
+    allReleases = [];
+    document.getElementById('releases').innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
+    
+    const promises = REPOS.map(repo =>
+      fetch(`https://api.github.com/repos/${repo}/releases`)
+        .then(res => {
+          if (!res.ok) throw new Error(`${repo}: HTTP ${res.status}`);
+          return res.json();
+        })
+        .catch(err => {
+          console.warn(`加载仓库 ${repo} 失败:`, err.message);
+          return [];
+        })
+    );
+    
+    const results = await Promise.all(promises);
+    allReleases = results.flat();
+    
+    // 按发布日期排序（最新的在前）
+    allReleases.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
+    
+    document.getElementById('release-count').textContent = allReleases.length;
+    document.getElementById('file-count').textContent = allReleases.reduce((a, r) => a + r.assets.length, 0);
+    renderReleases(allReleases);
+    
+    if (allReleases.length === 0) {
+      showToast('所有仓库均无可用文件', 'warning');
+    }
+  } catch (e) { 
+    showToast('文件加载失败: ' + e.message, 'error'); 
+  }
 }
 
 function renderReleases(releases, term = '') {
   const container = document.getElementById('releases');
-  if (!releases.length && !term) { container.innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>'; return; }
+  if (!releases.length && !term) { 
+    container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>暂无文件</p></div>'; 
+    return; 
+  }
   container.innerHTML = releases.map(r => `
     <div class="release-item">
       <div class="release-header">
