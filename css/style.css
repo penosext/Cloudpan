@@ -117,9 +117,10 @@ body {
 .back-to-top { opacity: 0; transform: translateY(20px) scale(.8); pointer-events: none; }
 .back-to-top.show { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
 
-/* 新增：搜索和评论按钮的图标微调颜色 */
+/* 搜索和评论按钮的图标颜色 */
 .search-float i { color: var(--primary); }
 .scroll-to-discussion i { color: var(--primary); }
+.token-set i { color: var(--primary); }
 
 /* 容器 */
 .container { 
@@ -182,7 +183,7 @@ body {
 .disclaimer { grid-area: disclaimer; }
 .footer { grid-area: footer; }
 
-/* 统计栏 - 桌面端横向 */
+/* 统计栏 */
 .stats-bar {
   display: flex; 
   justify-content: center; 
@@ -597,6 +598,37 @@ body {
   flex-shrink: 0; 
 }
 
+/* 回复按钮 */
+.btn-reply {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--outline-variant);
+  background: var(--surface-container-low);
+  color: var(--on-surface-variant);
+  font-size: .8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all .2s;
+  margin-top: var(--spacing-sm);
+}
+.btn-reply:hover {
+  background: var(--primary-container);
+  color: var(--primary);
+  border-color: var(--primary);
+}
+
+/* 回复弹窗遮罩 */
+#reply-modal {
+  animation: fadeIn .2s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 /* 底部 */
 .disclaimer {
   text-align: center; 
@@ -655,6 +687,7 @@ body {
 }
 .toast-success { border-left: 4px solid #0C7D60; }
 .toast-error { border-left: 4px solid var(--error); }
+.toast-warning { border-left: 4px solid #E6A817; }
 @keyframes slideUp { 
   from { 
     opacity: 0; 
