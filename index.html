@@ -11,15 +11,16 @@
 <body>
   <!-- 右下角浮动按钮 -->
   <div class="floating-buttons">
+    <button class="floating-btn token-set" onclick="setGithubToken()" aria-label="设置Token" title="设置GitHub Token以直接回复评论">
+      <i class="fas fa-key"></i>
+    </button>
     <button class="floating-btn theme-toggle" id="theme-toggle" onclick="toggleTheme()" aria-label="切换主题">
       <i class="fas fa-sun"></i>
       <i class="fas fa-moon"></i>
     </button>
-    <!-- 新增：搜索按钮 -->
     <button class="floating-btn search-float" id="search-float" onclick="focusSearch()" aria-label="搜索文件">
       <i class="fas fa-search"></i>
     </button>
-    <!-- 新增：滑到评论区按钮 -->
     <button class="floating-btn scroll-to-discussion" id="scroll-to-discussion" onclick="scrollToDiscussion()" aria-label="前往评论区">
       <i class="fas fa-comments"></i>
     </button>
@@ -103,6 +104,23 @@
     </div>
 
     <div class="footer"><p>&copy; 2025 POSC</p></div>
+  </div>
+  <!-- /.container -->
+
+  <!-- 回复弹窗 -->
+  <div id="reply-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:10001;justify-content:center;align-items:center;">
+    <div style="background:var(--surface);border-radius:var(--radius-xl);padding:var(--spacing-xl);max-width:560px;width:90%;box-shadow:var(--elevation-4);border:1px solid var(--outline-variant);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--spacing-lg);">
+        <h3 style="font-weight:500;display:flex;align-items:center;gap:var(--spacing-sm);"><i class="fas fa-reply"></i> 回复评论</h3>
+        <button onclick="closeReplyModal()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--on-surface-variant);padding:4px 8px;border-radius:var(--radius-sm);">&times;</button>
+      </div>
+      <div id="reply-context" style="background:var(--surface-container-low);border-radius:var(--radius-md);padding:var(--spacing-md);margin-bottom:var(--spacing-md);border-left:4px solid var(--primary);font-size:.9rem;color:var(--on-surface-variant);"></div>
+      <textarea id="replyBody" class="form-textarea" placeholder="输入你的回复（支持Markdown）" rows="4"></textarea>
+      <div style="display:flex;justify-content:flex-end;gap:var(--spacing-sm);">
+        <button onclick="closeReplyModal()" style="padding:var(--spacing-md) var(--spacing-xl);border-radius:var(--radius-full);border:1px solid var(--outline-variant);background:var(--surface-container-low);color:var(--on-surface);font-size:.9rem;cursor:pointer;">取消</button>
+        <button id="btn-submit-reply" onclick="submitReply()" class="btn-submit" style="margin:0;"><i class="fas fa-paper-plane"></i> 提交回复</button>
+      </div>
+    </div>
   </div>
 
   <script src="./js/app.js"></script>
