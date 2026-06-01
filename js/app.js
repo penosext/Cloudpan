@@ -63,12 +63,11 @@ function setGithubToken() {
     ? `当前已配置 Token: ${currentToken.substring(0, 8)}...\n\n输入新 Token 替换，或点取消保留：`
     : '请输入 GitHub Personal Access Token（需要 repo 权限）：\n\n获取方式：\nGitHub Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token\n\n勾选 public_repo 权限即可';
   const token = prompt(msg);
-  if (token === null) return; // 用户点取消
+  if (token === null) return;
   if (token.trim()) {
     localStorage.setItem('github_token', token.trim());
     showToast('✅ Token 已保存，现在可以直接回复评论了！', 'success');
   } else if (currentToken) {
-    // 用户清空了输入，删除 token
     localStorage.removeItem('github_token');
     showToast('Token 已清除', 'info');
   }
@@ -113,7 +112,7 @@ async function fetchAnnouncement() {
   }
 }
 
-// ===================== 文件发布 - 多仓库支持 =====================
+// ===================== 文件发布 =====================
 let allReleases = [];
 let REPOS = [];
 
@@ -122,9 +121,7 @@ async function fetchRepoList() {
     const res = await fetch('https://raw.githubusercontent.com/penosext/Cloudpan/main/repo');
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const text = await res.text();
-    REPOS = text.split('\n')
-      .map(line => line.trim())
-      .filter(line => line && !line.startsWith('#'));
+    REPOS = text.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('#'));
     if (!REPOS.length) throw new Error('仓库列表为空');
   } catch (e) {
     showToast('仓库列表加载失败，使用默认仓库', 'warning');
@@ -135,7 +132,6 @@ async function fetchRepoList() {
 async function fetchReleases() {
   try {
     await fetchRepoList();
-    
     allReleases = [];
     document.getElementById('releases').innerHTML = '<div class="loading"><div class="spinner"></div>加载中...</div>';
     
@@ -145,24 +141,18 @@ async function fetchReleases() {
           if (!res.ok) throw new Error(`${repo}: HTTP ${res.status}`);
           return res.json();
         })
-        .catch(err => {
-          console.warn(`加载仓库 ${repo} 失败:`, err.message);
-          return [];
-        })
+        .catch(err => { console.warn(`加载仓库 ${repo} 失败:`, err.message); return []; })
     );
     
     const results = await Promise.all(promises);
     allReleases = results.flat();
-    
     allReleases.sort((a, b) => new Date(b.published_at) - new Date(a.published_at));
     
     document.getElementById('release-count').textContent = allReleases.length;
     document.getElementById('file-count').textContent = allReleases.reduce((a, r) => a + r.assets.length, 0);
     renderReleases(allReleases);
     
-    if (allReleases.length === 0) {
-      showToast('所有仓库均无可用文件', 'warning');
-    }
+    if (allReleases.length === 0) showToast('所有仓库均无可用文件', 'warning');
   } catch (e) { 
     showToast('文件加载失败: ' + e.message, 'error'); 
   }
@@ -228,20 +218,24 @@ async function fetchDiscussions() {
   try {
     const issues = await (await fetch('https://api.github.com/repos/penosext/Cloudpan/issues')).json();
     document.getElementById('discussions').innerHTML = issues.map(i => {
-      const safeUser = esc(i.user.login).replace(/'/g, "\\'");
-      const safeBody = esc((i.body || '').substring(0, 200)).replace(/'/g, "\\'").replace(/\n/g, ' ').replace(/`/g, '\\`');
       return `
-      <div class="discussion-item">
-        <div class="discussion-header"><img src="${i.user.avatar_url}" class="avatar" alt=""><div><div class="discussion-author">${i.user.login}</div><div class="discussion-date">${new Date(i.created_at).toLocaleString('zh-CN')}</div></div></div>
+      <div class="discussion-item" data-issue-number="${i.number}">
+        <div class="discussion-header"><img src="${i.user.avatar_url}" class="avatar" alt=""><div><div class="discussion-author">${esc(i.user.login)}</div><div class="discussion-date">${new Date(i.created_at).toLocaleString('zh-CN')}</div></div></div>
         <div class="discussion-title"><i class="fas fa-comment-dots"></i> ${esc(i.title)}</div>
         <div class="comment-markdown">${marked.parse(i.body || '')}</div>
         <div style="display:flex;gap:var(--spacing-sm);flex-wrap:wrap;">
           <button class="btn-load-comments" onclick="loadComments(this,${i.number})"><i class="fas fa-comments"></i> 评论 (${i.comments})</button>
-          <button class="btn-reply" onclick="openReplyModal(${i.number}, '${safeUser}', '${safeBody}')"><i class="fas fa-reply"></i> 回复楼主</button>
+          <button class="btn-reply btn-reply-op" data-issue="${i.number}" data-user="${esc(i.user.login)}" data-body="${esc((i.body || '').substring(0, 200)).replace(/"/g, '&quot;')}"><i class="fas fa-reply"></i> 回复楼主</button>
         </div>
         <div class="comments-container"></div>
       </div>`;
     }).join('');
+    
+    document.querySelectorAll('.btn-reply-op').forEach(btn => {
+      btn.addEventListener('click', function() {
+        openReplyModal(parseInt(this.dataset.issue), this.dataset.user, this.dataset.body);
+      });
+    });
   } catch { 
     showToast('加载讨论失败', 'error'); 
   }
@@ -261,24 +255,30 @@ async function loadComments(btn, num) {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 加载中...';
     const comments = await (await fetch(`https://api.github.com/repos/penosext/Cloudpan/issues/${num}/comments`)).json();
     container.innerHTML = comments.map(c => {
-      const safeUser = esc(c.user.login).replace(/'/g, "\\'");
-      const safeBody = esc((c.body || '').substring(0, 200)).replace(/'/g, "\\'").replace(/\n/g, ' ').replace(/`/g, '\\`');
       return `
       <div class="comment-item">
         <img src="${c.user.avatar_url}" class="avatar" alt="">
         <div style="flex:1;min-width:0;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
-            <span class="discussion-author">${c.user.login}</span>
+            <span class="discussion-author">${esc(c.user.login)}</span>
             <span class="discussion-date">${new Date(c.created_at).toLocaleString('zh-CN')}</span>
           </div>
           <div class="comment-markdown">${marked.parse(c.body || '')}</div>
-          <button class="btn-reply" onclick="openReplyModal(${num}, '${safeUser}', '${safeBody}')"><i class="fas fa-reply"></i> 回复</button>
+          <button class="btn-reply btn-reply-comment" data-issue="${num}" data-user="${esc(c.user.login)}" data-body="${esc((c.body || '').substring(0, 200)).replace(/"/g, '&quot;')}"><i class="fas fa-reply"></i> 回复</button>
         </div>
       </div>`;
     }).join('');
+    
     if (comments.length === 0) {
       container.innerHTML = '<div style="text-align:center;padding:16px;color:var(--on-surface-variant);">暂无评论，快来参与讨论吧</div>';
     }
+    
+    container.querySelectorAll('.btn-reply-comment').forEach(btn => {
+      btn.addEventListener('click', function() {
+        openReplyModal(parseInt(this.dataset.issue), this.dataset.user, this.dataset.body);
+      });
+    });
+    
     btn.innerHTML = `<i class="fas fa-comments"></i> 隐藏 (${comments.length})`;
     container.classList.add('show');
   } catch { 
@@ -309,7 +309,6 @@ function createNewIssue() {
   params.set('labels', 'user-generated');
   
   window.open('https://github.com/penosext/Cloudpan/issues/new?' + params.toString(), '_blank');
-  
   titleEl.value = '';
   bodyEl.value = '';
   showToast('已跳转到 GitHub，请点击 Submit new issue 完成提交', 'info');
@@ -348,7 +347,6 @@ async function submitReply() {
   try {
     const token = localStorage.getItem('github_token');
     if (token) {
-      // 有 Token：直接通过 API 提交
       const res = await fetch(`https://api.github.com/repos/penosext/Cloudpan/issues/${replyTarget.issueNumber}/comments`, {
         method: 'POST',
         headers: {
@@ -366,7 +364,6 @@ async function submitReply() {
       closeReplyModal();
       await fetchDiscussions();
     } else {
-      // 无 Token：复制到剪贴板 + 跳转
       try {
         await navigator.clipboard.writeText(body);
         showToast('📋 回复内容已复制，请在 GitHub 页面粘贴提交', 'info');
@@ -388,9 +385,7 @@ async function submitReply() {
 
 // 点击弹窗遮罩关闭
 document.addEventListener('click', function(e) {
-  if (e.target.id === 'reply-modal') {
-    closeReplyModal();
-  }
+  if (e.target.id === 'reply-modal') closeReplyModal();
 });
 
 // ESC 关闭弹窗
@@ -409,12 +404,7 @@ const debounce = (f, w) => { let t; return function(...a) { clearTimeout(t); t =
 
 function showToast(msg, type = 'success') {
   const old = document.querySelector('.toast'); if (old) old.remove();
-  const icons = {
-    success: 'check-circle',
-    error: 'exclamation-circle',
-    warning: 'exclamation-triangle',
-    info: 'info-circle'
-  };
+  const icons = { success: 'check-circle', error: 'exclamation-circle', warning: 'exclamation-triangle', info: 'info-circle' };
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
   t.innerHTML = `<i class="fas fa-${icons[type] || icons.success}"></i> ${esc(msg)}`;
