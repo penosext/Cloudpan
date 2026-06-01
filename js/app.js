@@ -32,6 +32,29 @@ function initScroll() {
 
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
+// 新增：滑到评论区
+function scrollToDiscussion() {
+  const discussionCard = document.querySelector('.discussion-card');
+  if (discussionCard) {
+    discussionCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+// 新增：聚焦搜索框并滚动到文件区
+function focusSearch() {
+  const searchInput = document.getElementById('file-search');
+  const fileSidebar = document.querySelector('.file-sidebar');
+  if (fileSidebar) {
+    fileSidebar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  setTimeout(() => {
+    if (searchInput) {
+      searchInput.focus();
+      searchInput.select();
+    }
+  }, 400);
+}
+
 // GitHub 统计 - 统计第一个仓库的数据
 async function fetchGitHubStats() {
   try {
