@@ -68,7 +68,7 @@ function initGitalk() {
   
   const gitalk = new Gitalk({
     clientID: 'Ov23lipmbX2beTg1ciFH',
-    clientSecret: '9610df02cebd81335cca005a223886b0a3810e57',
+    clientSecret: '4cb8710f3f198ca90d3f0752df34d929486868fa',
     repo: 'Cloudpan',
     owner: 'penosext',
     admin: ['wyxdlz54188'],
