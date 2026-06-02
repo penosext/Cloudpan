@@ -67,11 +67,11 @@ function initGitalk() {
   container.innerHTML = '';
   
   const gitalk = new Gitalk({
-    clientID: 'YOUR_GITHUB_APP_CLIENT_ID',
-    clientSecret: 'YOUR_GITHUB_APP_CLIENT_SECRET',
+    clientID: 'Ov23lipmbX2beTg1ciFH',
+    clientSecret: '9610df02cebd81335cca005a223886b0a3810e57',
     repo: 'Cloudpan',
     owner: 'penosext',
-    admin: ['penosext'],
+    admin: ['wyxdlz54188'],
     id: 'posc-resource-station',
     labels: ['Gitalk'],
     title: 'POSC资源站 - 社区讨论',
