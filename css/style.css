@@ -120,7 +120,6 @@ body {
 /* 搜索和评论按钮的图标颜色 */
 .search-float i { color: var(--primary); }
 .scroll-to-discussion i { color: var(--primary); }
-.token-set i { color: var(--primary); }
 
 /* 容器 */
 .container { 
@@ -461,174 +460,6 @@ body {
   color: var(--outline-variant); 
 }
 
-/* 讨论区 */
-.create-discussion { 
-  background: var(--surface-container-low); 
-  border-radius: var(--radius-lg); 
-  padding: var(--spacing-lg); 
-  margin-bottom: var(--spacing-lg); 
-  border: 1px solid var(--outline-variant); 
-}
-.form-input, .form-textarea {
-  width: 100%; 
-  padding: var(--spacing-md); 
-  margin-bottom: var(--spacing-md);
-  border: 2px solid var(--outline-variant); 
-  border-radius: var(--radius-md);
-  background: var(--surface); 
-  color: var(--on-surface); 
-  font-size: .95rem;
-  font-family: inherit; 
-  outline: none; 
-  resize: vertical; 
-  transition: border-color .2s;
-}
-.form-input:focus, .form-textarea:focus { border-color: var(--primary); }
-.btn-submit {
-  display: inline-flex; 
-  align-items: center; 
-  gap: var(--spacing-sm);
-  padding: var(--spacing-md) var(--spacing-xl); 
-  border-radius: var(--radius-full);
-  border: none; 
-  background: var(--primary); 
-  color: var(--on-primary);
-  font-size: .95rem; 
-  font-weight: 500; 
-  cursor: pointer;
-  box-shadow: var(--elevation-1); 
-  transition: all .2s;
-}
-.btn-submit:hover { opacity: .9; }
-.discussion-item {
-  background: var(--surface); 
-  border-radius: var(--radius-lg); 
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-md); 
-  border: 1px solid var(--outline-variant); 
-  transition: all .2s;
-}
-.discussion-item:hover { border-color: var(--primary); }
-.discussion-header { 
-  display: flex; 
-  align-items: center; 
-  gap: var(--spacing-md); 
-  margin-bottom: var(--spacing-md); 
-}
-.avatar { 
-  width: 44px; 
-  height: 44px; 
-  border-radius: 50%; 
-  border: 2px solid var(--primary-container); 
-  object-fit: cover; 
-}
-.discussion-author { font-weight: 500; }
-.discussion-date { font-size: .8rem; color: var(--on-surface-variant); }
-.discussion-title { 
-  font-size: 1.05rem; 
-  font-weight: 500; 
-  margin-bottom: var(--spacing-sm); 
-}
-.comment-markdown { 
-  line-height: 1.7; 
-  color: var(--on-surface-variant); 
-  font-size: .9rem; 
-}
-.comment-markdown p { margin-bottom: var(--spacing-sm); }
-.comment-markdown code { 
-  background: var(--surface-container-highest); 
-  padding: 2px 8px; 
-  border-radius: var(--radius-xs); 
-  font-size: .85rem; 
-}
-.comment-markdown pre { 
-  background: var(--surface-container-highest); 
-  padding: var(--spacing-md); 
-  border-radius: var(--radius-md); 
-  overflow-x: auto; 
-}
-.comment-markdown pre code { background: none; padding: 0; }
-.comment-markdown a { 
-  color: var(--primary); 
-  font-weight: 500; 
-  text-decoration: none; 
-}
-.comment-markdown blockquote { 
-  border-left: 4px solid var(--primary); 
-  padding-left: var(--spacing-md); 
-}
-.comment-markdown th { 
-  background: var(--surface-container-highest); 
-  font-weight: 500; 
-}
-.btn-load-comments {
-  display: inline-flex; 
-  align-items: center; 
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-lg); 
-  border-radius: var(--radius-full);
-  border: 1px solid var(--outline-variant); 
-  background: var(--surface-container-low);
-  color: var(--primary); 
-  font-size: .85rem; 
-  font-weight: 500; 
-  cursor: pointer; 
-  margin-top: var(--spacing-sm);
-}
-.btn-load-comments:hover { background: var(--primary-container); }
-.comments-container { 
-  display: none; 
-  margin-top: var(--spacing-md); 
-  padding-top: var(--spacing-md); 
-  border-top: 1px solid var(--outline-variant); 
-}
-.comments-container.show { display: block; }
-.comment-item {
-  display: flex; 
-  gap: var(--spacing-md); 
-  padding: var(--spacing-md);
-  margin-bottom: var(--spacing-sm); 
-  background: var(--surface-container-low);
-  border-radius: var(--radius-md); 
-  border: 1px solid var(--outline-variant);
-}
-.comment-item .avatar { 
-  width: 36px; 
-  height: 36px; 
-  flex-shrink: 0; 
-}
-
-/* 回复按钮 */
-.btn-reply {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-xs) var(--spacing-md);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--outline-variant);
-  background: var(--surface-container-low);
-  color: var(--on-surface-variant);
-  font-size: .8rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all .2s;
-  margin-top: var(--spacing-sm);
-}
-.btn-reply:hover {
-  background: var(--primary-container);
-  color: var(--primary);
-  border-color: var(--primary);
-}
-
-/* 回复弹窗遮罩 */
-#reply-modal {
-  animation: fadeIn .2s ease-out;
-}
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 /* 底部 */
 .disclaimer {
   text-align: center; 
@@ -701,6 +532,56 @@ body {
 
 a { text-decoration: none; }
 a:hover { text-decoration: none; }
+
+/* Gitalk 主题适配 */
+#gitalk-container {
+  min-height: 200px;
+}
+
+/* 暗色主题下 Gitalk 样式覆盖 */
+[data-theme="dark"] .gt-header-textarea {
+  background: var(--surface-container-lowest);
+  color: var(--on-surface);
+  border-color: var(--outline-variant);
+}
+[data-theme="dark"] .gt-header-textarea:focus {
+  border-color: var(--primary);
+}
+[data-theme="dark"] .gt-comment-content {
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+}
+[data-theme="dark"] .gt-comment-body {
+  color: var(--on-surface);
+}
+[data-theme="dark"] .gt-comment-body .email-hidden-toggle a {
+  color: var(--primary);
+}
+[data-theme="dark"] .gt-header-preview {
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+}
+[data-theme="dark"] .gt-btn {
+  background: var(--surface-container-highest);
+  color: var(--on-surface);
+  border-color: var(--outline-variant);
+}
+[data-theme="dark"] .gt-btn:hover {
+  background: var(--primary-container);
+  border-color: var(--primary);
+}
+[data-theme="dark"] .gt-btn-preview {
+  background: var(--surface-container-highest);
+  color: var(--on-surface);
+}
+[data-theme="dark"] .gt-popup {
+  background: var(--surface);
+  color: var(--on-surface);
+  border-color: var(--outline-variant);
+}
+[data-theme="dark"] .gt-svg svg {
+  fill: var(--on-surface-variant);
+}
 
 /* 移动端响应式 */
 @media (max-width: 1023px) {
